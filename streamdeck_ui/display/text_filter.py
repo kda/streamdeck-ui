@@ -42,12 +42,9 @@ class TextFilter(Filter):
         # Calculate the height and width of the text we're drawing, using the font itself
         label_w, _ = backdrop_draw.textsize(self.text, font=self.true_font)
 
-        # Calculate dimensions for text that include ascender (above the line)
-        # and below the line  (descender) characters. This is used to adust the
-        # font placement and should allow for button text to horizontally align
-        # across buttons. Basically we want to figure out what is the tallest
-        # text we will need to draw.
-        _, label_h = backdrop_draw.textsize("lLpgyL|", font=self.true_font)
+        # Calculate dimensions for requested text.  By using the actual text,
+        # multiple lines are supported.
+        _, label_h = backdrop_draw.textsize(self.text, font=self.true_font)
 
         gap = (size[1] - 5 * label_h) // 4
 
