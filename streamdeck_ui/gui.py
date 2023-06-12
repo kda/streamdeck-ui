@@ -10,7 +10,7 @@ from typing import Dict, Optional
 
 import pkg_resources
 from PySide6 import QtWidgets
-from PySide6.QtCore import QMimeData, QSignalBlocker, QSize, Qt, QTimer, QUrl
+from PySide6.QtCore import QCoreApplication, QMimeData, QSignalBlocker, QSize, Qt, QTimer, QUrl
 from PySide6.QtGui import QAction, QDesktopServices, QDrag, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QMainWindow, QMenu, QMessageBox, QSizePolicy, QSystemTrayIcon
 
@@ -854,23 +854,29 @@ def start(_exit: bool = False) -> None:
 
             # The QApplication object holds the Qt event loop and you need one of these
             # for your application
-            app = QApplication(sys.argv)
+            if show_ui:
+                app = QApplication(sys.argv)
+            else:
+                app = QCoreApplication(sys.argv)
             app.setApplicationName("Streamdeck UI")
             app.setApplicationVersion(version)
-            logo = QIcon(LOGO)
-            app.setWindowIcon(logo)
-            main_window = create_main_window(logo, app)
-            ui = main_window.ui
-            tray = create_tray(logo, app, main_window)
+            if show_ui:
+                logo = QIcon(LOGO)
+                app.setWindowIcon(logo)
+                main_window = create_main_window(logo, app)
+                ui = main_window.ui
+                tray = create_tray(logo, app, main_window)
 
-            api.streamdeck_keys.key_pressed.connect(partial(handle_keypress, ui))
+                api.streamdeck_keys.key_pressed.connect(partial(handle_keypress, ui))
 
-            ui.device_list.currentIndexChanged.connect(partial(build_device, ui))
-            ui.pages.currentChanged.connect(partial(change_page, ui))
+                ui.device_list.currentIndexChanged.connect(partial(build_device, ui))
+                ui.pages.currentChanged.connect(partial(change_page, ui))
 
-            api.plugevents.attached.connect(partial(streamdeck_attached, ui))
-            api.plugevents.detached.connect(partial(streamdeck_detached, ui))
-            api.plugevents.cpu_changed.connect(partial(streamdeck_cpu_changed, ui))
+                api.plugevents.attached.connect(partial(streamdeck_attached, ui))
+                api.plugevents.detached.connect(partial(streamdeck_detached, ui))
+                api.plugevents.cpu_changed.connect(partial(streamdeck_cpu_changed, ui))
+            else:
+                api.streamdeck_keys.key_pressed.connect(partial(handle_keypress, None))
 
             api.start()
 
@@ -886,8 +892,8 @@ def start(_exit: bool = False) -> None:
             # Handle <ctrl+c>
             signal.signal(signal.SIGINT, partial(sigterm_handler, api, app))
 
-            tray.show()
             if show_ui:
+                tray.show()
                 main_window.show()
 
             if _exit:
