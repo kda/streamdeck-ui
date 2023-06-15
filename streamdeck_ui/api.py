@@ -15,6 +15,7 @@ from streamdeck_ui.config import CONFIG_FILE_VERSION, DEFAULT_FONT, STATE_FILE
 from streamdeck_ui.dimmer import Dimmer
 from streamdeck_ui.display.display_grid import DisplayGrid
 from streamdeck_ui.display.filter import Filter
+from streamdeck_ui.display.cli_filter import CliFilter
 from streamdeck_ui.display.image_filter import ImageFilter
 from streamdeck_ui.display.pulse_filter import PulseFilter
 from streamdeck_ui.display.text_filter import TextFilter
@@ -510,5 +511,9 @@ class StreamDeckServer:
 
         if text:
             filters.append(TextFilter(text, font, vertical_align))
+
+        cli = button_settings.get("cli")
+        if cli:
+            filters.append(CliFilter(cli))
 
         display_handler.replace(page, button, filters)
