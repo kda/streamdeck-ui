@@ -21,14 +21,16 @@ class CliFilter(filter.Filter):
         self.args_ = args
 
     def initialize(self, size: Tuple[int, int]):
-        self.image = Image.new("RGB", size)
         spec = importlib.util.spec_from_file_location("junk", self.args_[0])
         self.mod_ = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.mod_)
 
     def transform(self, get_input: Callable[[], Image.Image], get_output: Callable[[int], Image.Image], input_changed: bool, time: Fraction) -> Tuple[Image.Image, int]:
         state = self.mod_.detectState(self.args_[1:])
-        hashcode = hash((self.__class__,) + tuple(self.args_) + (state,))
+        hash_tuple = (self.__class__,) + tuple(self.args_) + (state,)
+        #print('hash_tuple: ', hash_tuple)
+        hashcode = hash(hash_tuple)
+        #print('hashcode: ', hashcode)
         existing_image = get_output(hashcode)
         if existing_image:
             return (existing_image, hashcode)
@@ -36,4 +38,4 @@ class CliFilter(filter.Filter):
         input_image = get_input()
         input_image = self.mod_.prepareImage(input_image, state)
 
-        return (self.image, hashcode)
+        return (input_image, hashcode)
