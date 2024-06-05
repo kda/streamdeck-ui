@@ -39,12 +39,17 @@ class TextFilter(Filter):
         self.image = Image.new("RGBA", size)
         backdrop_draw = ImageDraw.Draw(self.image)
 
-        # Calculate the height and width of the text we're drawing, using the font itself
-        label_w, _ = backdrop_draw.textsize(self.text, font=self.true_font)
+        # TODO: center each line if there are more than one line
 
-        # Calculate dimensions for requested text.  By using the actual text,
-        # multiple lines are supported.
-        _, label_h = backdrop_draw.textsize(self.text, font=self.true_font)
+        # Calculate the height and width of the text we're drawing, using the font itself
+        lines = self.text.split("\n")
+        label_w = 0
+        for line in lines:
+            w = backdrop_draw.textlength(line, font=self.true_font)
+            if w > label_w:
+                label_w = w
+
+        label_h = 14 * len(lines)
 
         gap = (size[1] - 5 * label_h) // 4
 
@@ -70,7 +75,7 @@ class TextFilter(Filter):
 
     def transform(self, get_input: Callable[[], Image.Image], get_output: Callable[[int], Image.Image], input_changed: bool, time: Fraction) -> Tuple[Image.Image, int]:
         """
-        The transformation returns the loaded image, ando overwrites whatever came before.
+        The transformation returns the loaded image, and overwrites whatever came before.
         """
 
         if input_changed:
