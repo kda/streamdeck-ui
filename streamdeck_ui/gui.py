@@ -8,7 +8,8 @@ from functools import partial
 from subprocess import Popen  # nosec - Need to allow users to specify arbitrary commands
 from typing import Dict, Optional
 
-import pkg_resources
+#import pkg_resources
+import importlib.metadata
 from PySide6 import QtWidgets
 from PySide6.QtCore import QMimeData, QSignalBlocker, QSize, Qt, QTimer, QUrl
 from PySide6.QtGui import QAction, QDesktopServices, QDrag, QIcon
@@ -623,9 +624,12 @@ class MainWindow(QMainWindow):
         dependencies = ("streamdeck", "pyside6", "pillow", "pynput")
         for dep in dependencies:
             try:
-                dist = pkg_resources.get_distribution(dep)
-                body.append("{} {}".format(dep, dist.version))
-            except pkg_resources.DistributionNotFound:
+                #dist = pkg_resources.get_distribution(dep)
+                #body.append("{} {}".format(dep, dist.version))
+                version = importlib.metadata.version(dep)
+                body.append("{} {}".format(dep, version))
+            #except pkg_resources.DistributionNotFound:
+            except importlib.metadata.PackageNotFoundError:
                 pass
         QtWidgets.QMessageBox.about(self, title, "\n".join(body))
 
@@ -840,8 +844,10 @@ def start(_exit: bool = False) -> None:
         show_ui = False
 
     try:
-        version = pkg_resources.get_distribution("streamdeck_ui").version
-    except pkg_resources.DistributionNotFound:
+        #version = pkg_resources.get_distribution("streamdeck_ui").version
+        version = importlib.metadata.version("streamdeck_ui")
+    #except pkg_resources.DistributionNotFound:
+    except importlib.metadata.PackageNotFoundError:
         version = "devel"
 
     try:
